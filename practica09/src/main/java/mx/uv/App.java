@@ -2,6 +2,8 @@ package mx.uv;
 
 import static spark.Spark.*;
 
+import com.google.gson.*;
+
 /**
  * Hello world!
  *
@@ -41,13 +43,69 @@ public class App
         get("/", 
             (request, response) -> "<h1>Hola mundo!</h1>"
         );
+
+        post("/index.html", 
+            (request, response) -> "Soy el post"
+        );
         
         get("/ruta1", 
-            (request, response) -> "<h1>Adios mundo!</h1>"
+            (request, response) -> {
+                String parametro = request.queryParams("apellido");
+                System.out.println("tipo de contenido ruta1 get: " + request.contentType());
+
+                System.out.println(parametro);
+                System.out.println("Esto es el request: " + request.contentType());
+                return "<h1>Adios Mundo"+ parametro + "!</h1>";
+            }
+        );
+
+        post ("/ruta1", 
+            (request, response) -> {
+                String parametro = request.queryParams("apellido");
+                System.out.println("tipo de contenido ruta1 post: " + request.contentType());
+
+                System.out.println(parametro);
+                System.out.println("Esto es el request: " + request.contentType());
+                return "<h1>Adios "+ parametro + "!</h1>";
+            }
         );
 
         get("/ruta2", 
-            (request, response) -> "<h1>Que tal mundo!</h1>"
+            (request, response) -> {
+                String parametro = request.queryParams("nombre");
+                System.out.println("tipo de contenido: " + request.contentType());
+
+                JsonObject respuesta = new JsonObject();
+                respuesta.addProperty("msj", "hola");
+                respuesta.addProperty("apellido", parametro);
+                response.type("application/json");
+
+                return respuesta;
+            }
+        );
+
+        post("/ruta2", 
+            (request, response) -> {
+                //String parametro = request.queryParams("nombre");
+                String parametro = request.body();
+                System.out.println("tipo de contenido: " + request.contentType());
+                System.out.println("el body tiene: " + parametro);
+
+                JsonParser parser = new JsonParser();
+                //Este objeto sirve para acceder a los elementros de la peticion en Json
+                JsonElement arbol = parser.parse(parametro);
+
+                //Este objeto sirve para construir la respuestra en Json
+                JsonObject respuesta = new JsonObject();
+
+                respuesta.addProperty("msj", "hola");
+
+                respuesta.addProperty("apellido", arbol.getAsJsonObject().get("nombre").getAsString());
+                
+                response.type("application/json");
+
+                return respuesta;
+            }
         );
         
         get("/ruta3", 
@@ -55,8 +113,16 @@ public class App
         );
 
         get("/ejemplo", 
-            (request, response) -> "{\"alumno\":\"john\",\"matricula\":\"20001\",\"carrera\"':\"tc\"}"
+            (request, response) -> "{\"Alumno\":\"John\",\"Matricula\":\"20001\",\"Carrera\"':\"TC\"}"
 
+        );
+
+         get("/ejemplo2", 
+            (request, response) -> {
+                System.out.println("Esto es el request" + request.contentType());
+                response.type("application/json");
+                return "{\"Alumno\":\"John\",\"Matricula\":\"20001\",\"Carrera\"':\"TC\"}";
+            }
         );
             
     }
